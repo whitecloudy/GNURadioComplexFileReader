@@ -31,17 +31,21 @@ class IqDataReader:
         self.__readIndexSize+=1
         return returnVal
 
-    def read(self, read_block_size, immediateConsume=True):
+    def read(self, read_block_size=None, immediateConsume=True):
         self.consume(self.__readIndexSize)
 
         if self.eof():
             raise IndexError
+        
+        if read_block_size == None:
+            read_block_size = int(self.getTotalSize())
 
-        if len(self.__loadedData) < read_block_size:
+        while len(self.__loadedData) < read_block_size:
             self.__loadedData += list(np.fromfile(self.__IQstream, dtype=np.complex64, count=max(read_block_size, self.__minReadSize)))
-        self.__lastReadSize = read_block_size
-        returnData = self.__loadedData[:read_block_size]
 
+        returnData = self.__loadedData[:read_block_size]
+        self.__lastReadSize = read_block_size
+        
         #if immediateConsume is true this read will consume immediately
         if immediateConsume:
             self.consume()
